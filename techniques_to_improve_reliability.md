@@ -1,18 +1,18 @@
-# Techniques to improve reliability
+# Techniques to improve reliability 可靠性提升技术
 
-When GPT-3 fails on a task, what should you do?
+When GPT-3 fails on a task, what should you do? 当GPT-3任务实行失败时，你会怎么做？
 
-- Search for a better prompt that elicits more reliable answers?
-- Invest in thousands of examples to fine-tune a custom model?
-- Assume the model is incapable of the task, and move on?
+- Search for a better prompt that elicits more reliable answers? 搜寻可生成更可靠答案的提示
+- Invest in thousands of examples to fine-tune a custom model? 搜集数千样本以微调定制模型
+- Assume the model is incapable of the task, and move on? 假设模型不适合执行该任务，然后忽略
 
-There is no simple answer - it depends. However, if your task involves logical reasoning or complexity, consider trying the techniques in this article to build more reliable, high-performing prompts.
+There is no simple answer - it depends. However, if your task involves logical reasoning or complexity, consider trying the techniques in this article to build more reliable, high-performing prompts.本文提供的方法更适合于设计逻辑推理或加具有复杂性的问题。
 
-## Why GPT-3 fails on complex tasks
+## Why GPT-3 fails on complex tasks为什么GPT-3会在做复杂性任务时失败
 
-If you were asked to multiply 13 by 17, would the answer pop immediately into your mind? For most of us, probably not. Yet, that doesn't mean humans are incapable of two-digit multiplication. With a few seconds, and some pen and paper, it's not too taxing to work out that 13 x 17 = 130 + 70 + 21 = 221.
+If you were asked to multiply 13 by 17, would the answer pop immediately into your mind? For most of us, probably not. Yet, that doesn't mean humans are incapable of two-digit multiplication. With a few seconds, and some pen and paper, it's not too taxing to work out that 13 x 17 = 130 + 70 + 21 = 221.如果让人类来计算两位数乘法，答案也不会立即出现在脑子里，而需要用纸和笔算上一阵子。
 
-Similarly, if you give GPT-3 a task that's too complex to do in the time it takes to calculate its next token, it may confabulate an incorrect guess. Yet, akin to humans, that doesn't necessarily mean the model is incapable of the task. With some time and space to reason things out, the model still may be able to answer reliably.
+Similarly, if you give GPT-3 a task that's too complex to do in the time it takes to calculate its next token, it may confabulate an incorrect guess. Yet, akin to humans, that doesn't necessarily mean the model is incapable of the task. With some time and space to reason things out, the model still may be able to answer reliably.因此，如果给GPT-3的任务过于复杂，无法在得出下一个标记之前得到答案，它也会做出一个错误的猜测。但这并不意味着，它不能完成这样的任务，只要给足时间和空间，它一样能给出合理的答案。
 
 As an example, if you ask `text-davinci-002` the following math problem about juggling balls, it answers incorrectly:
 
@@ -25,7 +25,7 @@ A:
 There are 8 blue golf balls.
 ```
 
-Does this mean that GPT-3 cannot do simple math problems? No; in fact, it turns out that by prompting the model with `Let's think step by step`, the model solves the problem reliably:
+Does this mean that GPT-3 cannot do simple math problems? No; in fact, it turns out that by prompting the model with `Let's think step by step`, the model solves the problem reliably:没有给出中间的关联空间，所以它把golf balls等同于balls，所以给出了错误的答案。所以要让它有足够的步骤对问题进行拆解，区分balls、golf balls以及blue balls之间的差别，并分步分别计算，才能得出正确的答案。
 
 ```text-davinci-002
 Q: A juggler has 16 balls. Half of the balls are golf balls and half of the golf balls are blue. How many blue golf balls are there?

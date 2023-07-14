@@ -25,7 +25,7 @@ A:
 There are 8 blue golf balls.
 ```
 
-Does this mean that GPT-3 cannot do simple math problems? No; in fact, it turns out that by prompting the model with `Let's think step by step`, the model solves the problem reliably:没有给出中间的关联空间，所以它把golf balls等同于balls，所以给出了错误的答案。所以要让它有足够的步骤对问题进行拆解，区分balls、golf balls以及blue balls之间的差别，并分步分别计算，才能得出正确的答案。
+Does this mean that GPT-3 cannot do simple math problems? No; in fact, it turns out that by prompting the model with `Let's think step by step`, the model solves the problem reliably:没有给出中间的关联空间，所以它把golf balls等同于balls，所以给出了错误的答案。所以要让它有足够的步骤对问题进行拆解，区分balls、golf balls以及blue balls之间的差别，并分步分别计算，才能得出正确的答案。可见，这不单单是一个简单的计算问题，而是一个细微的概念理解问题。当用于理解的时间和空间仅限于一步时，模型会倾向于通过语义上的相似性，将不同的概念理解为同一个概念，从而得出错误的结果、而当我们将一个步骤展开为多个步骤时，才有可能充分辨别不同概念间的细微差别，并将问题分解为多个子问题逐步解决。
 
 ```text-davinci-002
 Q: A juggler has 16 balls. Half of the balls are golf balls and half of the golf balls are blue. How many blue golf balls are there?
@@ -42,27 +42,27 @@ That means that there are 4 blue golf balls.
 
 Of course, it's hard to tell from only a single example whether this `Let's think step by step` trick actually works in general or just got lucky on this particular problem. But it really does work. On a benchmark of word math problems, the `Let's think step by step` trick raised GPT-3's solve rate massively, from a worthless 18% to a decent 79%!
 
-## Model capabilities depend on context
+## Model capabilities depend on context模型质量依赖于上下文
 
-When learning to work with GPT-3, one common conceptual mistake is to believe that its capabilities are fixed across all contexts. E.g., if GPT-3 gets a simple logic question wrong, then it must be incapable of simple logic.
+When learning to work with GPT-3, one common conceptual mistake is to believe that its capabilities are fixed across all contexts. E.g., if GPT-3 gets a simple logic question wrong, then it must be incapable of simple logic.常见的错误认识是认为模型功能针对所有语境的质量都是固定不变的。比如，如果出现了一次简单逻辑问题错误，那么就认为GPT-3不具备解决简单逻辑问题的能力。
 
-But as the `Let's think step by step` example illustrates, apparent failures of GPT-3 can sometimes be remedied with a better prompt that helps the model steer itself toward the correct output.
+But as the `Let's think step by step` example illustrates, apparent failures of GPT-3 can sometimes be remedied with a better prompt that helps the model steer itself toward the correct output.上面的例子表明，可以通过设计更好的提示，来解决GPT-3产生的错误。
 
 ## How to improve reliability on complex tasks
 
-The rest of this article shares techniques for improving reliability of large language models on complex tasks. Although some of the techniques are specific to certain types of problems, many of them are built upon general principles that can be applied to a wide range of tasks, e.g.:
+The rest of this article shares techniques for improving reliability of large language models on complex tasks. Although some of the techniques are specific to certain types of problems, many of them are built upon general principles that can be applied to a wide range of tasks, e.g.:有些技术针对特定类型的问题，而大多数则基于普遍性原则，可应用于更大范围的任务场景。
 
-- Give clearer instructions
-- Split complex tasks into simpler subtasks
+- Give clearer instructions更清晰的任务说明--清晰意味着更多的细节，而模糊则正好相反，只能看到大致的边界和轮廓
+- Split complex tasks into simpler subtasks将复杂任务分解为更为简单的子任务--复杂通常意味着无法通过单一的步骤或一次性解决问题，比如上面的应用题，无法通过简单的一步二元运算就等得到正确的答案，因为中间隔着高尔夫球这个过渡量
 - Structure the instruction to keep the model on task
-- Prompt the model to explain before answering
-- Ask for justifications of many possible answers, and then synthesize
-- Generate many outputs, and then use the model to pick the best one
-- Fine-tune custom models to maximize performance
+- Prompt the model to explain before answering提醒模型在给出答案前先解释
+- Ask for justifications of many possible answers, and then synthesize要求权衡多个可能答案，然后进行综合
+- Generate many outputs, and then use the model to pick the best one生成多个答案，让模型选择其中最佳者
+- Fine-tune custom models to maximize performance微调定制模型以提高性能
 
 ## Split complex tasks into simpler tasks
 
-One way to give a model more time and space to think is to break tasks into simpler pieces.
+One way to give a model more time and space to think is to break tasks into simpler pieces.给模型提供更多时间和空间的最好办法，就是将任务分解为简单的部分。
 
 As an example, consider a task where we ask the model a multiple-choice question about some text - in this case, a game of Clue. When asked directly, `text-davinci-002` isn't able to put clues 3 & 5 together, and answers incorrectly:
  
@@ -90,7 +90,7 @@ Solution:
  
 Although clues 3 and 5 establish that Colonel Mustard was the only person in the observatory and that the person in the observatory had the candlestick, the model fails to combine them into a correct answer of (a) Yes.
  
-However, instead of asking for the answer directly, we can split the task into three pieces:
+However, instead of asking for the answer directly, we can split the task into three pieces:以人思考问题的方式和路径对任务进行分解，也就是从直接判断，扩展为先考虑线索间的相关性，然后再对答案进行推导，最后给出最终的答案。看起来，还是要从人的视角去考虑解决问题的实际步骤。
  
 - First, go through the clues one by one and consider whether the clue is potentially relevant
 - Second, combine the relevant clues to reason out the answer to the question
@@ -131,10 +131,10 @@ Clue 3 and Clue 5 both say that the person with the candlestick was in the obser
 (3) Third, write the final answer:
 (a) Yes; Colonel Mustard was in the observatory with the candlestick
 ```
- 
+可以利用会话提供连续窗口，分步骤查看子任务的执行结果。
 By giving the model more time and space to think, and guiding it along a reasoning plan, it's able to figure out the correct answer of (a) Yes.
 
-Another benefit of splitting complex instructions into smaller subtasks is that it can help keep the model focused on each subtask.
+Another benefit of splitting complex instructions into smaller subtasks is that it can help keep the model focused on each subtask.分解的另一个好处是，可以让模型聚焦在每个子任务上，也就是说，如果不设中间步骤，模型会更关注最终的结果，也就是与任务指令直接相关的生成内容，比如下面例子中的摘要任务，会以最后一句话作为生成结果的基准，而忽略前面语言方面的要求，这是与模型的生成原理直接相关的，因为是以补全为基础的。当增加一个识别语言的步骤后，模型会将视角集中到这个步骤上来，这样再执行下个步骤时，等于有了一个充分的上下文条件。
 
 For example, if we ask `text-davinci-002` to summarize a text in its original language, the model can lapse back into English:
 
@@ -172,15 +172,15 @@ Spanish
 La estadística es una ciencia que estudia la variabilidad, colección, organización, análisis, interpretación, y presentación de los datos, así como el proceso aleatorio que los genera siguiendo las leyes de la probabilidad.
 ```
 
-## Prompt the model to explain before answering
+## Prompt the model to explain before answering回答之前想想为什么
 
-Another powerful technique for improving the reliability of answers is to prompt the model to gradually reason out the answer rather than jumping immediately to the final answer. By 'thinking aloud' the model can be far more likely to arrive at the correct answer.
+Another powerful technique for improving the reliability of answers is to prompt the model to gradually reason out the answer rather than jumping immediately to the final answer. By 'thinking aloud' the model can be far more likely to arrive at the correct answer.逐步推导出答案，而不是跳步一下就得出答案。
 
 ### Zero-shot
 
 #### Method
 
-Published by [Takeshi Kojima et al. in 2022](https://arxiv.org/abs/2205.11916), the easiest way to prompt a model to reason out the answer is to simply prepend answers with `Let's think step by step.` Figure 2 illustrates an example:
+Published by [Takeshi Kojima et al. in 2022](https://arxiv.org/abs/2205.11916), the easiest way to prompt a model to reason out the answer is to simply prepend answers with `Let's think step by step.` Figure 2 illustrates an example:一步一步想
 
 [![zero-shot reasoning example](images/zero-shot_reasoners_fig2.png)
 <br>Source: *Large Language Models are Zero-Shot Reasoners* by Takeshi Kojima et al. (2022).](https://arxiv.org/abs/2205.11916)
@@ -194,14 +194,14 @@ Applying this simple trick to the MultiArith math dataset, the authors found `Le
 
 #### Implications
 
-Although the `Let's think step by step` trick works well on math problems, it's not effective on all tasks. The authors found that it was most helpful for multi-step arithmetic problems, symbolic reasoning problems, strategy problems, and other reasoning problems. It didn't help with simple math problems or common sense questions, and presumably wouldn't help with many other non-reasoning tasks either.
+Although the `Let's think step by step` trick works well on math problems, it's not effective on all tasks. The authors found that it was most helpful for multi-step arithmetic problems, symbolic reasoning problems, strategy problems, and other reasoning problems. It didn't help with simple math problems or common sense questions, and presumably wouldn't help with many other non-reasoning tasks either.局限性：对简单数学问题、常识问题和非推理问题没有帮助
 
 [![zero-shot reasoning example](images/zero-shot_reasoners_tab1.png)
 <br>Source: *Large Language Models are Zero-Shot Reasoners* by Takeshi Kojima et al. (2022).](https://arxiv.org/abs/2205.11916)
 
 To learn more, read the [full paper](https://arxiv.org/abs/2205.11916).
 
-If you apply this technique to your own tasks, don't be afraid to experiment with customizing the instruction. `Let's think step by step` is rather generic, so you may find better performance with instructions that hew to a stricter format customized to your use case. For example, you can try more structured variants like `First, think step by step about why X might be true. Second, think step by step about why Y might be true. Third, think step by step about whether X or Y makes more sense.`. And you can even give the model an example format to help keep it on track, e.g.:
+If you apply this technique to your own tasks, don't be afraid to experiment with customizing the instruction. `Let's think step by step` is rather generic, so you may find better performance with instructions that hew to a stricter format customized to your use case. For example, you can try more structured variants like `First, think step by step about why X might be true. Second, think step by step about why Y might be true. Third, think step by step about whether X or Y makes more sense.`. And you can even give the model an example format to help keep it on track, e.g.:变体
 
 ```text-davinci-002
 Using the IRS guidance below, answer the following questions using this format:
@@ -246,7 +246,7 @@ Because the Toyota Prius Prime meets all of the criteria for a federal tax credi
 
 #### Method
 
-Prompting the model to reason out its answers can be done in many ways. One way is to demonstrate with a few examples ('few-shot'), as studied by [Jason Wei and Denny Zhou et al. from Google](https://ai.googleblog.com/2022/05/language-models-perform-reasoning-via.html). Here's an example few-shot chain-of-thought prompt:
+Prompting the model to reason out its answers can be done in many ways. One way is to demonstrate with a few examples ('few-shot'), as studied by [Jason Wei and Denny Zhou et al. from Google](https://ai.googleblog.com/2022/05/language-models-perform-reasoning-via.html). Here's an example few-shot chain-of-thought prompt:示范
 
 [![chain of thought example](images/chain_of_thought_fig1.png)
 <br>Source: *Chain of Thought Prompting Elicits Reasoning in Large Language Models* Jason Wei and Denny Zhou et al. (2022)](https://ai.googleblog.com/2022/05/language-models-perform-reasoning-via.html)
